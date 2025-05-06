@@ -259,7 +259,7 @@ def evaluate_job_by_id(job, applicant_data):
 
         
         score = score * 10
-        if score > 8.5:
+        if score > 9.0:
             score = 10
 
         
@@ -288,21 +288,21 @@ experience = ctrl.Antecedent(np.arange(0, 11, 1), 'experience')
 suitability = ctrl.Consequent(np.arange(0, 101, 1), 'suitability')
 
 # Define membership functions
-skills['poor'] = fuzz.trapmf(skills.universe, [0, 0, 2, 4])
-skills['average'] = fuzz.trapmf(skills.universe, [2, 4, 6, 8])
-skills['good'] = fuzz.trapmf(skills.universe, [6, 8, 10, 10])
+skills['poor'] = fuzz.trapmf(skills.universe, [0, 1, 3, 4])
+skills['average'] = fuzz.trapmf(skills.universe, [4, 5, 6, 7])
+skills['good'] = fuzz.trapmf(skills.universe, [6, 7.5, 8.5, 10])
 
-certifications['few'] = fuzz.trapmf(certifications.universe, [0, 0, 2, 4])
-certifications['moderate'] = fuzz.trapmf(certifications.universe, [2, 4, 6, 8])
-certifications['many'] = fuzz.trapmf(certifications.universe, [6, 8, 10, 10])
+certifications['poor'] = fuzz.trapmf(certifications.universe, [0, 1, 3, 4])
+certifications['average'] = fuzz.trapmf(certifications.universe, [4, 5, 6, 7])
+certifications['good'] = fuzz.trapmf(certifications.universe, [6, 7.5, 8.5, 10])
 
-education['below'] = fuzz.trapmf(education.universe, [0, 0, 2, 4])
-education['meets'] = fuzz.trapmf(education.universe, [2, 4, 6, 8])
-education['exceeds'] = fuzz.trapmf(education.universe, [6, 8, 10, 10])
+education['poor'] = fuzz.trapmf(education.universe, [0, 1, 2, 3])
+education['average'] = fuzz.trapmf(education.universe, [4, 5, 6, 7])
+education['good'] = fuzz.trapmf(education.universe, [6, 7.5, 8.5, 10])
 
-experience['inadequate'] = fuzz.trapmf(experience.universe, [0, 0, 2, 4])
-experience['adequate'] = fuzz.trapmf(experience.universe, [2, 4, 6, 8])
-experience['extensive'] = fuzz.trapmf(experience.universe, [6, 8, 10, 10])
+experience['poor'] = fuzz.trapmf(experience.universe, [0, 1, 3, 4])
+experience['average'] = fuzz.trapmf(experience.universe, [4, 4.5, 5.5, 6])
+experience['good'] = fuzz.trapmf(experience.universe, [6, 7.5, 8.5, 10])
 
 suitability['low'] = fuzz.trapmf(suitability.universe, [0, 0, 20, 40])
 suitability['medium'] = fuzz.trapmf(suitability.universe, [20, 40, 60, 80])
@@ -316,36 +316,36 @@ def evaluate_applicant(skill_level, certification_count, education_level, experi
     
     # Define fuzzy rules
     rules = [
-        ctrl.Rule(skills['good'] & certifications['many'] & education['exceeds'] & experience['extensive'], suitability['high']),
-        ctrl.Rule(skills['average'] & certifications['moderate'] & education['meets'] & experience['adequate'], suitability['medium']),
-        ctrl.Rule(skills['poor'] | certifications['few'] | education['below'] | experience['inadequate'], suitability['low']),
-        ctrl.Rule(skills['good'] & education['exceeds'], suitability['high']),
-        ctrl.Rule(certifications['many'] & experience['extensive'], suitability['high']),
-        ctrl.Rule(skills['average'] & certifications['few'], suitability['medium']),
-        ctrl.Rule(education['meets'] & experience['adequate'], suitability['medium']),
-        ctrl.Rule(skills['poor'] & certifications['few'], suitability['low']),
-        ctrl.Rule(experience['inadequate'], suitability['low']),
-        ctrl.Rule(experience['adequate'], suitability['low']),
-        ctrl.Rule(experience['extensive'], suitability['high']),
-    ]
-    
-    if priors['education'] == True:
-        rules.append(ctrl.Rule(education['exceeds'], suitability['high']))
-        rules.append(ctrl.Rule(education['below'], suitability['low']))
-        rules.append(ctrl.Rule(education['meets'], suitability['low']))
-    if priors['skills'] == True:
-        rules.append(ctrl.Rule(skills['good'], suitability['high']))
-        rules.append(ctrl.Rule(skills['poor'], suitability['low']))
-        rules.append(ctrl.Rule(skills['average'], suitability['low']))
-    if priors['certificates'] == True:
-        rules.append(ctrl.Rule(certifications['many'], suitability['high']))
-        rules.append(ctrl.Rule(certifications['few'], suitability['low']))
-        rules.append(ctrl.Rule(certifications['moderate'], suitability['low']))
-    if priors['experience'] == True:
-        rules.append(ctrl.Rule(experience['extensive'], suitability['high']))
-        rules.append(ctrl.Rule(experience['inadequate'], suitability['low']))
-        rules.append(ctrl.Rule(experience['adequate'], suitability['low']))
+        # High suitability
+        ctrl.Rule(experience['good'] & skills['good'], suitability['high']),
+        ctrl.Rule(experience['average'] & skills['good'] & education['average'], suitability['high']),
+        ctrl.Rule(experience['good'] & education['good'], suitability['high']),
+        ctrl.Rule(experience['average'] & skills['good'] & certifications['average'], suitability['high']),
+        ctrl.Rule(experience['good'] & skills['average'] & education['average'], suitability['high']),
+        ctrl.Rule(experience['good'] & certifications['poor'], suitability['high']),
+        ctrl.Rule(skills['good'] & experience['average'] & education['average'], suitability['high']),
+        ctrl.Rule(experience['good'] & skills['good'] & education['poor'], suitability['high']),
+        ctrl.Rule(skills['good'] & experience['good'] & certifications['poor'], suitability['high']),
 
+        # Medium suitability
+        ctrl.Rule(experience['average'] & skills['average'] & education['average'], suitability['medium']),
+        ctrl.Rule(experience['average'] & skills['good'] & education['poor'], suitability['medium']),
+        ctrl.Rule(experience['good'] & skills['poor'], suitability['medium']),
+        ctrl.Rule(experience['average'] & certifications['poor'] & skills['average'], suitability['medium']),
+        ctrl.Rule(experience['poor'] & skills['good'] & education['average'], suitability['medium']),
+        ctrl.Rule(experience['average'] & skills['average'] & certifications['average'], suitability['medium']),
+        ctrl.Rule(skills['good'] & experience['average'] & education['poor'], suitability['medium']),
+        ctrl.Rule((skills['average'] | experience['average']) & certifications['poor'], suitability['medium']),
+        ctrl.Rule(skills['good'] & education['average'] & certifications['poor'], suitability['medium']),
+
+        # Low suitability        
+        ctrl.Rule(experience['poor'] & skills['poor'], suitability['low']),
+        ctrl.Rule(experience['poor'] & education['poor'], suitability['low']),
+        ctrl.Rule(experience['poor'] & certifications['poor'] & skills['average'], suitability['low']),
+        ctrl.Rule(experience['average'] & skills['poor'] & education['poor'], suitability['low']),
+        ctrl.Rule(skills['poor'] & education['poor'], suitability['low']),
+        ctrl.Rule(certifications['poor'] & experience['poor'] & skills['poor'], suitability['low']),
+    ]
 
     suitability_ctrl = ctrl.ControlSystem(rules)
     suitability_evaluation = ctrl.ControlSystemSimulation(suitability_ctrl)
@@ -356,11 +356,11 @@ def evaluate_applicant(skill_level, certification_count, education_level, experi
     suitability_evaluation.input['education'] = education_level
     suitability_evaluation.input['experience'] = experience_years
     
-    # Perform fuzzy computation
-    suitability_evaluation.compute()
-
-    # Return the computed suitability score
-    return suitability_evaluation.output['suitability']
+    try:
+        suitability_evaluation.compute()
+        return suitability_evaluation.output['suitability']
+    except KeyError:
+        return 0  # or some fallback value
 
 
 app = Flask(__name__)
@@ -390,7 +390,7 @@ def make_predict():
                 prior_category[category] = True
 
 
-        evaluated_Job = evaluate_job_by_id(job, applicant_data)
+        evaluate_job_by_id(job, applicant_data)
 
   
         suitability_score = evaluate_applicant(SKILLS, CERTIFICATES, EDUCATION, EXPERIENCE, priors=prior_category)
